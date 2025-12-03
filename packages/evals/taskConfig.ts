@@ -123,10 +123,17 @@ const DEFAULT_AGENT_MODELS = process.env.EVAL_AGENT_MODELS
 /**
  * getModelList:
  * Returns a list of models to be used for the given category.
- * If category is "experimental", it merges DEFAULT_EVAL_MODELS and EXPERIMENTAL_EVAL_MODELS.
+ * If EVAL_MODEL_OVERRIDE is set, returns only that model.
+ * If category is "agent" or "external_agent_benchmarks", returns agent models.
  * Otherwise, returns DEFAULT_EVAL_MODELS filtered by provider if specified.
  */
 const getModelList = (category?: string): string[] => {
+  // If a specific model override is set, use only that model
+  const modelOverride = process.env.EVAL_MODEL_OVERRIDE;
+  if (modelOverride) {
+    return [modelOverride];
+  }
+
   const provider = process.env.EVAL_PROVIDER?.toLowerCase();
 
   if (category === "agent" || category === "external_agent_benchmarks") {
