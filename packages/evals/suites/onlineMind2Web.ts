@@ -45,7 +45,14 @@ export const buildOnlineMind2WebTestcases = (models: string[]): Testcase[] => {
   }
 
   const candidates = parseJsonlRows(lines, isMind2WebRow);
-  const rows = applySampling(candidates, sampleCount, maxCases);
+
+  // Filter by task_id if specified (for single-task runs)
+  const taskIdFilter = process.env.EVAL_ONLINEMIND2WEB_TASK_ID;
+  const filteredCandidates = taskIdFilter
+    ? candidates.filter((row) => row.task_id === taskIdFilter)
+    : candidates;
+
+  const rows = applySampling(filteredCandidates, sampleCount, maxCases);
 
   const allTestcases: Testcase[] = [];
   for (const model of models) {

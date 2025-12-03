@@ -44,7 +44,14 @@ export const buildWebVoyagerTestcases = (models: string[]): Testcase[] => {
   }
 
   const candidates = parseJsonlRows(lines, isVoyagerRow);
-  const rows = applySampling(candidates, sampleCount, maxCases);
+
+  // Filter by task_id if specified (for single-task runs)
+  const taskIdFilter = process.env.EVAL_WEBVOYAGER_TASK_ID;
+  const filteredCandidates = taskIdFilter
+    ? candidates.filter((row) => row.id === taskIdFilter)
+    : candidates;
+
+  const rows = applySampling(filteredCandidates, sampleCount, maxCases);
 
   const allTestcases: Testcase[] = [];
   for (const model of models) {

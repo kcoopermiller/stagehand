@@ -45,9 +45,17 @@ export const buildGAIATestcases = (models: string[]): Testcase[] => {
   const candidates = parseJsonlRows(gaiaLines, isGaiaRow);
 
   // Filter by level if specified
-  const filteredCandidates = levelFilter
+  let filteredCandidates = levelFilter
     ? candidates.filter((row) => row.Level === levelFilter)
     : candidates;
+
+  // Filter by task_id if specified (for single-task runs)
+  const taskIdFilter = process.env.EVAL_GAIA_TASK_ID;
+  if (taskIdFilter) {
+    filteredCandidates = filteredCandidates.filter(
+      (row) => row.id === taskIdFilter,
+    );
+  }
 
   const gaiaRows = applySampling(filteredCandidates, sampleCount, maxCases);
 
