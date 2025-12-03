@@ -38,9 +38,11 @@ export const webvoyager: EvalFunction = async ({
     });
 
     // Start collecting screenshots in parallel
+    // Note: captureOnNavigation must be false because Stagehand's Page
+    // only supports the "console" event, not "load" or "domcontentloaded"
     const screenshotCollector = new ScreenshotCollector(page, {
       maxScreenshots: 10, // Keep last 10 screenshots
-      captureOnNavigation: true, // Also capture on page navigation
+      captureOnNavigation: false, // Stagehand Page doesn't support navigation events
     });
 
     screenshotCollector.start();
