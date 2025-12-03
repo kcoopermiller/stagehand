@@ -363,7 +363,11 @@ const generateFilteredTestcases = (): Testcase[] => {
 
               // Use the custom model name if provided, otherwise use input.modelName
               const modelName = customOpenAIConfig.modelName || input.modelName;
-              const model = customOpenAI(modelName);
+              // Use Chat Completions API if OPENAI_USE_CHAT_COMPLETIONS is set,
+              // otherwise use the default Responses API
+              const model = customOpenAIConfig.useChatCompletions
+                ? customOpenAI.chat(modelName)
+                : customOpenAI(modelName);
 
               llmClient = new AISdkClientWrapped({
                 model,

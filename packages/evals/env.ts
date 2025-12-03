@@ -16,9 +16,13 @@ export const env: "BROWSERBASE" | "LOCAL" =
  * - CUSTOM_OPENAI_BASE_URL: The base URL for the custom endpoint (e.g., "http://localhost:8000/v1")
  * - CUSTOM_OPENAI_API_KEY: Optional API key (defaults to "EMPTY" for vLLM)
  * - CUSTOM_OPENAI_MODEL_NAME: The model name to use with the custom endpoint
+ * - OPENAI_USE_CHAT_COMPLETIONS: Set to "true" to use Chat Completions API (/v1/chat/completions)
+ *   instead of the Responses API (/v1/responses). Useful for endpoints that don't support Responses API.
  */
 export const customOpenAIConfig = {
   baseURL: process.env.CUSTOM_OPENAI_BASE_URL,
   apiKey: process.env.CUSTOM_OPENAI_API_KEY || "EMPTY",
   modelName: process.env.CUSTOM_OPENAI_MODEL_NAME,
+  useChatCompletions:
+    process.env.OPENAI_USE_CHAT_COMPLETIONS?.toLowerCase() === "true",
 };
