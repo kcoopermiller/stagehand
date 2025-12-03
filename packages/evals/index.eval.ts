@@ -407,7 +407,19 @@ const generateFilteredTestcases = (): Testcase[] => {
             if (result && result._success) {
               console.log(`✅ ${input.name}: Passed`);
             } else {
-              console.log(`❌ ${input.name}: Failed`);
+              // Log error details if the task returned an error
+              if (result?.error) {
+                const err = result.error;
+                const errorMessage = err instanceof Error ? err.message : (typeof err === 'object' && err !== null && 'message' in err ? err.message : String(err));
+                const errorName = err instanceof Error ? err.name : (typeof err === 'object' && err !== null && 'name' in err ? err.name : 'Unknown');
+                const errorStack = err instanceof Error ? err.stack : (typeof err === 'object' && err !== null && 'stack' in err ? err.stack : undefined);
+                console.error(`❌ ${input.name}: ${errorName} - ${errorMessage}`);
+                if (errorStack) {
+                  console.error(`Stack trace:\n${errorStack}`);
+                }
+              } else {
+                console.log(`❌ ${input.name}: Failed (no error details)`);
+              }
             }
           } finally {
             if (v3Input?.v3) await v3Input.v3.close();
