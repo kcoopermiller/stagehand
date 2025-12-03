@@ -415,24 +415,42 @@ const generateFilteredTestcases = (): Testcase[] => {
           return result;
         } catch (error) {
           // Log any errors that occur during task execution
-          console.error(`❌ ${input.name}: Error - ${error}`);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorStack = error instanceof Error ? error.stack : undefined;
+          const errorName = error instanceof Error ? error.name : "Unknown";
+
+          console.error(`❌ ${input.name}: ${errorName} - ${errorMessage}`);
+          if (errorStack) {
+            console.error(`Stack trace:\n${errorStack}`);
+          }
+
           logger.error({
             message: `Error in task ${input.name}`,
             level: 0,
             auxiliary: {
               error: {
-                value: error.message,
+                value: errorMessage,
+                type: "string",
+              },
+              errorName: {
+                value: errorName,
                 type: "string",
               },
               trace: {
-                value: error.stack,
+                value: errorStack || "",
                 type: "string",
               },
             },
           });
+
+          // Serialize error properly to include message
+          const serializedError = error instanceof Error
+            ? { name: error.name, message: error.message, stack: error.stack }
+            : error;
+
           return {
             _success: false,
-            error: JSON.parse(JSON.stringify(error, null, 2)),
+            error: serializedError,
             logs: logger.getLogs(),
           };
         }
