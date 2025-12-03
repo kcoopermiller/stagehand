@@ -151,7 +151,7 @@ export async function initV3({
     } else {
       agent = v3.agent({
         model: modelName,
-        executionModel: "google/gemini-2.5-flash",
+        executionModel: modelName,
       });
     }
   }
