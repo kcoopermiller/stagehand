@@ -74,6 +74,7 @@ export const onlineMind2Web: EvalFunction = async ({
     const evaluator = evaluatorModel
       ? new V3Evaluator(v3, evaluatorModel, {
           apiKey: process.env.EVAL_EVALUATOR_API_KEY || process.env.OPENAI_API_KEY || "",
+          baseURL: "https://api.openai.com/v1", // Direct to OpenAI, bypass interception
         })
       : new V3Evaluator(v3); // Falls back to Gemini default
 
