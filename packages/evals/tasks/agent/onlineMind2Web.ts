@@ -70,15 +70,12 @@ export const onlineMind2Web: EvalFunction = async ({
     });
 
     // Configure V3Evaluator model - can be overridden via EVAL_EVALUATOR_MODEL
-    // Falls back to agent model if using custom endpoint, otherwise Gemini default
-    const customBaseURL = process.env.CUSTOM_OPENAI_BASE_URL;
-    const evaluatorModel = process.env.EVAL_EVALUATOR_MODEL || modelName;
-    const evaluator = customBaseURL
-      ? new V3Evaluator(v3, evaluatorModel as any, {
-          apiKey: process.env.CUSTOM_OPENAI_API_KEY || "intercepted",
-          baseURL: customBaseURL,
+    const evaluatorModel = process.env.EVAL_EVALUATOR_MODEL as any;
+    const evaluator = evaluatorModel
+      ? new V3Evaluator(v3, evaluatorModel, {
+          apiKey: process.env.EVAL_EVALUATOR_API_KEY || process.env.OPENAI_API_KEY || "",
         })
-      : new V3Evaluator(v3, evaluatorModel as any);
+      : new V3Evaluator(v3); // Falls back to Gemini default
 
     const evalResult = await evaluator.ask({
       question: `Did the agent successfully complete this task: "${params.confirmed_task}"?`,
