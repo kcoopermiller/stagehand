@@ -202,7 +202,8 @@ function buildUsage(detailed = false): string {
       EVAL_GAIA_LIMIT           max tasks to run (default: 25)
       EVAL_GAIA_SAMPLE          random sample count before limit
       EVAL_GAIA_LEVEL           filter by difficulty level [${chalk.yellow("1")}, ${chalk.yellow("2")}, ${chalk.yellow("3")}]
-      
+      EVAL_GAIA_TASK_ID         run single task by ID (e.g., level1-0)
+
       ${chalk.dim("Example:")}
       
       ${chalk.green("EVAL_GAIA_LEVEL=1 EVAL_GAIA_LIMIT=10 pnpm run evals name=agent/gaia")}
@@ -218,6 +219,7 @@ function buildUsage(detailed = false): string {
       
       EVAL_WEBVOYAGER_LIMIT     max tasks to run (default: 25)
       EVAL_WEBVOYAGER_SAMPLE    random sample count before limit
+      EVAL_WEBVOYAGER_TASK_ID   run single task by ID (e.g., Allrecipes--0)
       
       ${chalk.gray("Ground Truth Evaluation:")}
       
@@ -263,7 +265,8 @@ function buildUsage(detailed = false): string {
       
       EVAL_ONLINEMIND2WEB_LIMIT     max tasks to run (default: 25)
       EVAL_ONLINEMIND2WEB_SAMPLE    random sample count before limit
-      
+      EVAL_ONLINEMIND2WEB_TASK_ID   run single task by ID (e.g., b7258ee05d75e6c50673a59914db412e)
+
       ${chalk.dim("Example:")}
       
       ${chalk.green("EVAL_ONLINEMIND2WEB_SAMPLE=50 EVAL_ONLINEMIND2WEB_LIMIT=10 pnpm run evals name=agent/onlineMind2Web")}

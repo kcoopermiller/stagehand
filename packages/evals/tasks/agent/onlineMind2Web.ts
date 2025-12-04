@@ -38,6 +38,7 @@ export const onlineMind2Web: EvalFunction = async ({
 
     const agent = v3.agent({
       model: modelName,
+      executionModel: modelName,
       systemPrompt: `You are a helpful assistant that must solve the task by browsing. At the end, produce a single line: "Final Answer: <answer>" summarizing the requested result (e.g., score, list, or text). Current page: ${await page.title()}. ALWAYS OPERATE WITHIN THE PAGE OPENED BY THE USER, WHICHEVER TASK YOU ARE ATTEMPTING TO COMPLETE CAN BE ACCOMPLISHED WITHIN THE PAGE.`,
     });
 
@@ -45,9 +46,11 @@ export const onlineMind2Web: EvalFunction = async ({
     fs.writeFileSync("screenshot.png", screenshot);
 
     // Start collecting screenshots in parallel
+    // Note: captureOnNavigation must be false because Stagehand's Page
+    // only supports the "console" event, not "load" or "domcontentloaded"
     const screenshotCollector = new ScreenshotCollector(page, {
       maxScreenshots: 5, // Keep up to the last 5 screenshots
-      captureOnNavigation: true, // Also capture on page navigation
+      captureOnNavigation: false, // Stagehand Page doesn't support navigation events
     });
 
     screenshotCollector.start();
@@ -66,7 +69,15 @@ export const onlineMind2Web: EvalFunction = async ({
       level: 1,
     });
 
-    const evaluator = new V3Evaluator(v3);
+    // Configure V3Evaluator model - can be overridden via EVAL_EVALUATOR_MODEL
+    const evaluatorModel = process.env.EVAL_EVALUATOR_MODEL as any;
+    const evaluator = evaluatorModel
+      ? new V3Evaluator(v3, evaluatorModel, {
+          apiKey: process.env.EVAL_EVALUATOR_API_KEY || process.env.OPENAI_API_KEY || "",
+          baseURL: "https://api.openai.com/v1", // Direct to OpenAI, bypass interception
+        })
+      : new V3Evaluator(v3); // Falls back to Gemini default
+
     const evalResult = await evaluator.ask({
       question: `Did the agent successfully complete this task: "${params.confirmed_task}"?`,
       screenshot: screenshots,

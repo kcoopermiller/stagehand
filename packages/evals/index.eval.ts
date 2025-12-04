@@ -363,7 +363,11 @@ const generateFilteredTestcases = (): Testcase[] => {
 
               // Use the custom model name if provided, otherwise use input.modelName
               const modelName = customOpenAIConfig.modelName || input.modelName;
-              const model = customOpenAI(modelName);
+              // Use Chat Completions API if OPENAI_USE_CHAT_COMPLETIONS is set,
+              // otherwise use the default Responses API
+              const model = customOpenAIConfig.useChatCompletions
+                ? customOpenAI.chat(modelName)
+                : customOpenAI(modelName);
 
               llmClient = new AISdkClientWrapped({
                 model,
@@ -403,7 +407,19 @@ const generateFilteredTestcases = (): Testcase[] => {
             if (result && result._success) {
               console.log(`✅ ${input.name}: Passed`);
             } else {
-              console.log(`❌ ${input.name}: Failed`);
+              // Log error details if the task returned an error
+              if (result?.error) {
+                const err = result.error;
+                const errorMessage = err instanceof Error ? err.message : (typeof err === 'object' && err !== null && 'message' in err ? err.message : String(err));
+                const errorName = err instanceof Error ? err.name : (typeof err === 'object' && err !== null && 'name' in err ? err.name : 'Unknown');
+                const errorStack = err instanceof Error ? err.stack : (typeof err === 'object' && err !== null && 'stack' in err ? err.stack : undefined);
+                console.error(`❌ ${input.name}: ${errorName} - ${errorMessage}`);
+                if (errorStack) {
+                  console.error(`Stack trace:\n${errorStack}`);
+                }
+              } else {
+                console.log(`❌ ${input.name}: Failed (no error details)`);
+              }
             }
           } finally {
             if (v3Input?.v3) await v3Input.v3.close();
@@ -411,24 +427,42 @@ const generateFilteredTestcases = (): Testcase[] => {
           return result;
         } catch (error) {
           // Log any errors that occur during task execution
-          console.error(`❌ ${input.name}: Error - ${error}`);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorStack = error instanceof Error ? error.stack : undefined;
+          const errorName = error instanceof Error ? error.name : "Unknown";
+
+          console.error(`❌ ${input.name}: ${errorName} - ${errorMessage}`);
+          if (errorStack) {
+            console.error(`Stack trace:\n${errorStack}`);
+          }
+
           logger.error({
             message: `Error in task ${input.name}`,
             level: 0,
             auxiliary: {
               error: {
-                value: error.message,
+                value: errorMessage,
+                type: "string",
+              },
+              errorName: {
+                value: errorName,
                 type: "string",
               },
               trace: {
-                value: error.stack,
+                value: errorStack || "",
                 type: "string",
               },
             },
           });
+
+          // Serialize error properly to include message
+          const serializedError = error instanceof Error
+            ? { name: error.name, message: error.message, stack: error.stack }
+            : error;
+
           return {
             _success: false,
-            error: JSON.parse(JSON.stringify(error, null, 2)),
+            error: serializedError,
             logs: logger.getLogs(),
           };
         }

@@ -149,10 +149,18 @@ export async function initV3({
         systemPrompt: `You are a helpful assistant that must solve the task by browsing. At the end, produce a single line: "Final Answer: <answer>" summarizing the requested result (e.g., score, list, or text). ALWAYS OPERATE WITHIN THE PAGE OPENED BY THE USER, YOU WILL ALWAYS BE PROVIDED WITH AN OPENED PAGE, WHICHEVER TASK YOU ARE ATTEMPTING TO COMPLETE CAN BE ACCOMPLISHED WITHIN THE PAGE. Simple perform the task provided, do not overthink or overdo it. The user trusts you to complete the task without any additional instructions, or answering any questions.`,
       });
     } else {
-      agent = v3.agent({
-        model: modelName,
-        executionModel: "google/gemini-2.5-flash",
-      });
+      // When a custom llmClient is provided (e.g., with a custom base URL for interception),
+      // do NOT pass 'model' - this lets the agent use the V3 instance's llmClient.
+      // Passing model: modelName would cause resolveLlmClient() to create a NEW client
+      // that bypasses the custom llmClient entirely.
+      agent = llmClient
+        ? v3.agent({
+            executionModel: modelName,
+          })
+        : v3.agent({
+            model: modelName,
+            executionModel: modelName,
+          });
     }
   }
 

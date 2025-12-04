@@ -100,6 +100,9 @@ function printHelp(): void {
     chalk.cyan("  -s, --sample".padEnd(20)) + "Random sample before limit",
   );
   console.log(
+    chalk.cyan("  -i, --task-id".padEnd(20)) + "Run single task by ID",
+  );
+  console.log(
     chalk.cyan("  -f, --filter".padEnd(20)) + "Benchmark filters (key=value)\n",
   );
 }
@@ -284,6 +287,7 @@ function parseArgs(rawArgs: string[]): {
         p: "provider",
         l: "limit",
         s: "sample",
+        i: "task-id",
         f: "filter",
       };
 
@@ -297,6 +301,12 @@ function parseArgs(rawArgs: string[]): {
         if (filterValue && filterValue.includes("=")) {
           const [key, value] = filterValue.split("=");
           filters.push([key, value]);
+        }
+      } else if (optionName === "task-id") {
+        // Parse task-id as string
+        const value = rawArgs[++i];
+        if (value && !value.startsWith("-")) {
+          options["taskId"] = value;
         }
       } else {
         // Get next value
@@ -400,6 +410,15 @@ function handleRun(args: string[]): void {
         env[`EVAL_${benchmarkName.toUpperCase()}_SAMPLE`] = String(
           options.sample,
         );
+      }
+
+      // Set task_id filter if specified (for single-task runs)
+      if (options.taskId) {
+        env[`EVAL_${benchmarkName.toUpperCase()}_TASK_ID`] = String(
+          options.taskId,
+        );
+        // Also set limit to 1 to ensure only one task runs
+        env.EVAL_MAX_K = "1";
       }
 
       // Apply filters
